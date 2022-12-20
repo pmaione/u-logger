@@ -3,8 +3,72 @@
 
 * Biblioteca de funções logger
 
+
+* Instruções
+
+Adicionar flag no inicio do ~Makefile~:
+
+#+begin_example
+  # Log Level [0~5]
+  LOG_LEVEL ?= 0
+#+end_example
+
+Na Seção ~#C defines~ inserir:
+
+#+begin_example
+  C_DEFS += -DLOG_LEVEL=$(LOG_LEVEL)
+#+end_example
+
+Adicionar o parâmetro ao ~make~:
+
+#+begin_example
+  make LOG_LEVEL=5 <recipes>
+#+end_example
+
+Inserir a função de inicialização do Módulo ~Logger~ após a configurar o periferico USART utilizado:
+
+#+begin_src c
+  /* Inicializa modulo Logger para debug via serial (LL Driver)*/
+    Log_Init(USART1, LOG_LEVEL, millis);
+#+end_src
+
 * Examples
 
 #+begin_src c
   Log_Init();
+#+end_src
+
+* Util
+
+** Setup do printf para STM32F1
+
+Adicionar flag no ~Makefile~:
+
+#+begin_example
+CFLAGS += -specs=nano.specs
+CFLAGS += -specs=nosys.specs
+#+end_example
+
+
+Adicionar o trecho de código abaixo:
+#+begin_src c
+  /**
+   ,* @brief  Retargets the C library printf function to the USART.
+   ,* @param  None
+   ,* @retval None
+   ,*/
+  #ifdef __GNUC__
+  int __io_putchar(int ch)
+  #else
+  int fputc(int ch, FILE *f)
+  #endif /* __GNUC__ */
+  {
+    /* Send ch trough desired peripheral */
+    if (ch == '\n') {
+    }
+    /* Rotina para envio de caractere pela serial */
+    Usart_Send_Char(PRINTF_USART_INSTANCE, ch);
+
+    return ch;
+  }
 #+end_src

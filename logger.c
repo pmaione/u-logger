@@ -24,6 +24,8 @@ char *past_last_slash(const char *str) {
 #ifdef USE_HAL_DRIVER
 #pragma message "Using HAL DRIVER! \r\n"
 
+#include "stm32f1xx_hal.h"
+
 static UART_HandleTypeDef *log_husart;
 
 uint32_t log_millis(void) { return HAL_GetTick(); }
@@ -42,13 +44,15 @@ void Log_Init(UART_HandleTypeDef *husart, uint8_t log_level) {
 #include "stm32f1xx_ll_pwr.h"
 #include "stm32f1xx_ll_utils.h"
 
-static USART_TypeDef *log_husart = USART2;
+static USART_TypeDef *log_husart;
 
 void Log_Init(USART_TypeDef *husart, uint8_t log_level,
               fnptr_millis_t millis_fn) {
   log_husart = husart;
   _log_level = log_level;
   _millis_fn = millis_fn;
+
+  printf("\n\n\n");
 }
 
 #endif
