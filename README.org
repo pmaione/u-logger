@@ -1,0 +1,10 @@
+#+TITLE: Logger (Para microcontroladores)
+
+
+* Biblioteca de funções logger
+
+* Examples
+
+#+begin_src c
+  Log_Init();
+#+end_src
