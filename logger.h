@@ -9,14 +9,9 @@
 #define __LOGGER_H
 
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
-
-/* #include "usart.h" */
-#include "stm32f1xx_ll_usart.h"
-
-/* #ifndef USARTx_TRACE */
-/* #define USARTx_TRACE USART2 */
-/* #endif */
+#include <string.h>
 
 #ifndef TRACE_PREFIX_ADD_TIMESTAMP
 #define TRACE_PREFIX_ADD_TIMESTAMP 1
@@ -55,8 +50,8 @@
 #define LOG_LEVEL_SHORT_NAMES                                                  \
   {                                                                            \
     "O", LOG_LEVEL_CRITICAL_PREFIX, LOG_LEVEL_ERROR_PREFIX,                    \
-        LOG_LEVEL_WARNING_PREFIX, LOG_LEVEL_INFO_PREFIX,                       \
-        LOG_LEVEL_DEBUG_PREFIX,                                                \
+	LOG_LEVEL_WARNING_PREFIX, LOG_LEVEL_INFO_PREFIX,                       \
+	LOG_LEVEL_DEBUG_PREFIX,                                                \
   }
 #endif
 
@@ -68,7 +63,7 @@
  * To set a custom log level, define the LOG_LEVEL before including this header
  * (e.g., as a compiler definition)
  */
-#define LOG_LEVEL LOG_LEVEL_OFF
+#define LOG_LEVEL LOG_LEVEL_DEBUG
 #endif
 
 #ifndef LOG_ECHO_EN_DEFAULT
@@ -93,14 +88,6 @@
 #define FUNC() __FUNCTION__
 #define PRETTY_FUNC() __PRETTY_FUNCTION__
 
-#if (TRACE_PREFIX_ADD_TIMESTAMP == 1)
-#ifdef _UNITY_TEST_
-#define _TRACE_TS()
-#else
-#define _TRACE_TS() printf("[%-10lu] ", _millis_fn())
-#endif
-#endif
-
 #define _TRACE_NL() "\r\n"
 #define _TRACE_PREFIX() "<TRACE> "
 #define _TRACE_LINE_PREFIX(line) " (" TOSTRING(line) ") "
@@ -113,7 +100,7 @@
 #define TRACE()                                                                \
   _TRACE_TS();                                                                 \
   printf("%s %s %s %s \n", _TRACE_PREFIX(), __FILENAME__,                      \
-         _TRACE_LINE_PREFIX(__LINE__), __FUNCTION__);                          \
+	 _TRACE_LINE_PREFIX(__LINE__), __FUNCTION__);                          \
   /*  */
 #define TRACE_MSG(...)                                                         \
   _TRACE_TS();                                                                 \
@@ -149,19 +136,10 @@
   }                                                                            \
   printf("\n")
 
-#else
-
-#define TRACE()                                                                \
-  Usart_SendStr(USARTx_TRACE, _TRACE_PREFIX());                                \
-  Usart_SendStr(USARTx_TRACE, __FILENAME__);                                   \
-  Usart_SendStr(USARTx_TRACE, _TRACE_LINE_PREFIX(__LINE__));                   \
-  Usart_SendStr(USARTx_TRACE, __FUNCTION__);                                   \
-  Usart_SendStr(USARTx_TRACE, _TRACE_NL());
-
-#define TRACE_MSG(...)
 #endif /* TRACE_PRINTF */
 
 #else
+
 #define TRACE()
 #define TRACE_MSG(...)
 #define DUMP_STR(var)
@@ -169,6 +147,7 @@
 #define DUMP_HEX(var)
 #define DUMP_INT_BUF(var, len)
 #define DUMP_HEX_BUF(var, len)
+
 #endif
 
 enum log_level_e {
@@ -182,18 +161,14 @@ enum log_level_e {
 
 /*  */
 typedef uint32_t (*fnptr_millis_t)(void);
-extern fnptr_millis_t _millis_fn;
+
 /*  */
 char *past_last_slash(const char *str);
-void Log_Print_Level();
-void Log(uint8_t level, const char *format, ...);
-/* void Log_Serial(uint8_t level, char * msg); */
 
-#ifdef USE_HAL_DRIVER
-void Log_Init(USART_TypeDef *husart, uint8_t log_level);
-#else
-void Log_Init(USART_TypeDef *husart, uint8_t log_level,
-              fnptr_millis_t millis_fn);
-#endif
+void Log_Print_Level();
+
+void Log(uint8_t level, const char *format, ...);
+
+void Log_Init(uint8_t log_level, fnptr_millis_t millis_fn);
 
 #endif /* __LOGGER_H */
